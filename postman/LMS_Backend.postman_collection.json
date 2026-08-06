@@ -1,0 +1,171 @@
+{
+  "info": {
+    "name": "LMS Backend",
+    "_postman_id": "b7e2a1a0-1c1a-4f1a-9c1a-lmsbackend0001",
+    "description": "API collection for the LMS (Tuition Class) backend. Import into Postman and set the `baseUrl` collection variable if it differs from the default.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "studentId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Admin (creates Tuition Class)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tuitionClassName\": \"Sample Tuition Class\",\n  \"adminName\": \"Jane Admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "Register Student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('studentId', data.student.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentNumber\": \"S001\",\n  \"fullName\": \"John Student\",\n  \"username\": \"john.student\",\n  \"password\": \"password123\",\n  \"school\": \"Example High School\",\n  \"phone\": \"0771234567\",\n  \"parentPhone\": \"0777654321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/students",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students"]
+            }
+          }
+        },
+        {
+          "name": "Get All Students",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/students",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students"]
+            }
+          }
+        },
+        {
+          "name": "Get Student By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/students/{{studentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students", "{{studentId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
