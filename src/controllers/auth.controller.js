@@ -46,5 +46,38 @@ async function registerAdmin(req, res) {
     res.status(500).json({ error: 'Something went wrong during registration' });
   }
 }
+async function loginAdmin(req, res) {
+  try {
+    const { email, password } = req.body;
 
-module.exports = { registerAdmin };
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    if (!admin) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const isPasswordValid = await comparePassword(password, admin.passwordHash);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const payload = { adminId: admin.id, tuitionClassId: admin.tuitionClassId, role: admin.role };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    res.json({
+      message: 'Login successful',
+      admin: { id: admin.id, name: admin.name, email: admin.email },
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong during login' });
+  }
+}
+
+module.exports = { registerAdmin, loginAdmin };
