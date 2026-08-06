@@ -14,7 +14,7 @@ async function registerAdmin(req, res) {
     if (existingAdmin) {
       return res.status(409).json({ error: 'Email already registered' });
     }
-
+    debugger;
     const tuitionClass = await prisma.tuitionClass.create({
       data: { name: tuitionClassName },
     });

@@ -53,4 +53,60 @@ async function registerStudent(req, res) {
   }
 }
 
-module.exports = { registerStudent };
+async function getAllStudents(req, res) {
+  try {
+    const tuitionClassId = req.admin.tuitionClassId;
+
+    const students = await prisma.student.findMany({
+      where: { tuitionClassId },
+      select: {
+        id: true,
+        studentNumber: true,
+        fullName: true,
+        username: true,
+        school: true,
+        phone: true,
+        parentPhone: true,
+        createdAt: true,
+      },
+      orderBy: { fullName: 'asc' },
+    });
+
+    res.json({ count: students.length, students });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong while fetching students' });
+  }
+}
+
+async function getStudentById(req, res) {
+  try {
+    const tuitionClassId = req.admin.tuitionClassId;
+    const { id } = req.params;
+
+    const student = await prisma.student.findFirst({
+      where: { id, tuitionClassId },
+      select: {
+        id: true,
+        studentNumber: true,
+        fullName: true,
+        username: true,
+        school: true,
+        phone: true,
+        parentPhone: true,
+        createdAt: true,
+      },
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    res.json({ student });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong while fetching the student' });
+  }
+}
+
+module.exports = { registerStudent, getAllStudents, getStudentById };
