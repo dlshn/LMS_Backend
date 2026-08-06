@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model TuitionClass {
+  id         String   @id @default(uuid())
+  name       String
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  admins   Admin[]
+  students Student[]
+}
+
+model Admin {
+  id             String        @id @default(uuid())
+  tuitionClassId String?
+  tuitionClass   TuitionClass? @relation(fields: [tuitionClassId], references: [id])
+  name           String
+  email          String        @unique
+  passwordHash   String
+  role           AdminRole     @default(ADMIN)
+  createdAt      DateTime      @default(now())
+}
+
+model Student {
+  id             String       @id @default(uuid())
+  tuitionClassId String
+  tuitionClass   TuitionClass @relation(fields: [tuitionClassId], references: [id])
+  studentNumber  String
+  fullName       String
+  username       String       @unique
+  passwordHash   String
+  createdAt      DateTime     @default(now())
+
+  @@unique([tuitionClassId, studentNumber])
+}
