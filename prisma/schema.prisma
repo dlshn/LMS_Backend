@@ -39,6 +39,9 @@ model Student {
   tuitionClass   TuitionClass @relation(fields: [tuitionClassId], references: [id])
   studentNumber  String
   fullName       String
+  school         String?
+  phone          String?
+  parentPhone    String?
   username       String       @unique
   passwordHash   String
   createdAt      DateTime     @default(now())
