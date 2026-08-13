@@ -1,5 +1,4 @@
 const prisma = require('../utils/prisma');
-const { calculateRankings } = require('../utils/ranking');
 
 async function getMarksEntryForm(req, res) {
   try {
