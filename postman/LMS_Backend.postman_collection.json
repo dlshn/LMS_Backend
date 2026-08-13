@@ -9,7 +9,8 @@
     { "key": "baseUrl", "value": "http://localhost:5000" },
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" },
-    { "key": "studentId", "value": "" }
+    { "key": "studentId", "value": "" },
+    { "key": "examId", "value": "" }
   ],
   "item": [
     {
@@ -162,6 +163,143 @@
               "raw": "{{baseUrl}}/api/students/{{studentId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "students", "{{studentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"date\": \"2026-08-07\",\n  \"status\": \"PRESENT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "attendance"]
+            }
+          }
+        },
+        {
+          "name": "Get Student Attendance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance/student/{{studentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "attendance", "student", "{{studentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exams",
+      "item": [
+        {
+          "name": "Create Exam",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('examId', data.exam.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Term 1 Maths\",\n  \"subject\": \"Mathematics\",\n  \"examDate\": \"2026-08-20\",\n  \"description\": \"Term 1 written exam\",\n  \"maxMarks\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exams",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exams"]
+            }
+          }
+        },
+        {
+          "name": "Get All Exams",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exams",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exams"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marks",
+      "item": [
+        {
+          "name": "Get Marks Entry Form",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/marks/{{examId}}/form",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "marks", "{{examId}}", "form"]
+            }
+          }
+        },
+        {
+          "name": "Submit Bulk Marks",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marks\": [\n    { \"studentId\": \"{{studentId}}\", \"marksObtained\": 85 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/marks/{{examId}}/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "marks", "{{examId}}", "bulk"]
             }
           }
         }
