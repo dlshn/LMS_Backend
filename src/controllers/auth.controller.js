@@ -80,4 +80,40 @@ async function loginAdmin(req, res) {
   }
 }
 
-module.exports = { registerAdmin, loginAdmin };
+const { generateAccessToken: genAccess, generateRefreshToken: genRefresh } = require('../utils/token');
+
+async function loginStudent(req, res) {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    const student = await prisma.student.findUnique({ where: { username } });
+    if (!student) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    const isPasswordValid = await comparePassword(password, student.passwordHash);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    const payload = { studentId: student.id, tuitionClassId: student.tuitionClassId, type: 'student' };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    res.json({
+      message: 'Login successful',
+      student: { id: student.id, fullName: student.fullName, studentNumber: student.studentNumber },
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong during login' });
+  }
+}
+
+module.exports = { registerAdmin, loginAdmin, loginStudent };

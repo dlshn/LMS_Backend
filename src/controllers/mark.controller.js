@@ -88,4 +88,27 @@ async function submitBulkMarks(req, res) {
   }
 }
 
-module.exports = { getMarksEntryForm, submitBulkMarks };
+async function getMyResults(req, res) {
+  try {
+    const studentId = req.student.studentId;
+
+    const marks = await prisma.mark.findMany({
+      where: { studentId, exam: { status: 'PUBLISHED' } },
+      include: { exam: { select: { id: true, title: true, subject: true, examDate: true, maxMarks: true } } },
+      orderBy: { exam: { examDate: 'desc' } },
+    });
+
+    res.json({
+      count: marks.length,
+      results: marks.map((m) => ({
+        exam: m.exam,
+        marksObtained: m.marksObtained,
+      })),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong while fetching your results' });
+  }
+}
+
+module.exports = { getMarksEntryForm, submitBulkMarks, getMyResults };
