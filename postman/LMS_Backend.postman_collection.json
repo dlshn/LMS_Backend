@@ -10,7 +10,11 @@
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" },
     { "key": "studentId", "value": "" },
-    { "key": "examId", "value": "" }
+    { "key": "examId", "value": "" },
+    { "key": "studentUsername", "value": "john.student" },
+    { "key": "studentPassword", "value": "password123" },
+    { "key": "studentAccessToken", "value": "" },
+    { "key": "studentRefreshToken", "value": "" }
   ],
   "item": [
     {
@@ -94,6 +98,38 @@
               "path": ["api", "auth", "login"]
             }
           }
+        },
+        {
+          "name": "Student Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('studentAccessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('studentRefreshToken', data.refreshToken);",
+                  "  pm.collectionVariables.set('studentId', data.student.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{studentUsername}}\",\n  \"password\": \"{{studentPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/student/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "student", "login"]
+            }
+          }
         }
       ]
     },
@@ -125,7 +161,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"studentNumber\": \"S001\",\n  \"fullName\": \"John Student\",\n  \"username\": \"john.student\",\n  \"password\": \"password123\",\n  \"school\": \"Example High School\",\n  \"phone\": \"0771234567\",\n  \"parentPhone\": \"0777654321\"\n}"
+              "raw": "{\n  \"studentNumber\": \"S001\",\n  \"fullName\": \"John Student\",\n  \"username\": \"{{studentUsername}}\",\n  \"password\": \"{{studentPassword}}\",\n  \"school\": \"Example High School\",\n  \"phone\": \"0771234567\",\n  \"parentPhone\": \"0777654321\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/students",
@@ -300,6 +336,22 @@
               "raw": "{{baseUrl}}/api/marks/{{examId}}/bulk",
               "host": ["{{baseUrl}}"],
               "path": ["api", "marks", "{{examId}}", "bulk"]
+            }
+          }
+        },
+        {
+          "name": "Get My Results (Student)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{studentAccessToken}}" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/marks/my-results",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "marks", "my-results"]
             }
           }
         }
