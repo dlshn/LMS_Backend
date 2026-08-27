@@ -12,14 +12,26 @@ enum AdminRole {
   ADMIN
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum ExamStatus {
+  DRAFT
+  PUBLISHED
+}
+
 model TuitionClass {
   id         String   @id @default(uuid())
   name       String
   isApproved Boolean  @default(false)
   createdAt  DateTime @default(now())
 
-  admins   Admin[]
-  students Student[]
+  admins      Admin[]
+  students    Student[]
+  attendances Attendance[]
+  exams       Exam[]
 }
 
 model Admin {
@@ -46,5 +58,48 @@ model Student {
   passwordHash   String
   createdAt      DateTime     @default(now())
 
+  attendances Attendance[]
+  marks       Mark[]
+
   @@unique([tuitionClassId, studentNumber])
+}
+
+model Attendance {
+  id             String           @id @default(uuid())
+  tuitionClassId String
+  tuitionClass   TuitionClass     @relation(fields: [tuitionClassId], references: [id])
+  studentId      String
+  student        Student          @relation(fields: [studentId], references: [id])
+  date           DateTime
+  status         AttendanceStatus
+  createdAt      DateTime         @default(now())
+
+  @@unique([studentId, date])
+}
+
+model Exam {
+  id             String     @id @default(uuid())
+  tuitionClassId String
+  tuitionClass   TuitionClass @relation(fields: [tuitionClassId], references: [id])
+  title          String
+  subject        String
+  examDate       DateTime
+  description    String?
+  maxMarks       Int
+  status         ExamStatus @default(DRAFT)
+  createdAt      DateTime   @default(now())
+
+  marks Mark[]
+}
+
+model Mark {
+  id            String   @id @default(uuid())
+  examId        String
+  exam          Exam     @relation(fields: [examId], references: [id])
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id])
+  marksObtained Int
+  createdAt     DateTime @default(now())
+
+  @@unique([examId, studentId])
 }
