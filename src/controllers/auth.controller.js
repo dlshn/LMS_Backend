@@ -1,6 +1,7 @@
 const prisma = require('../utils/prisma');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { generateAccessToken, generateRefreshToken } = require('../utils/token');
+const jwt = require('jsonwebtoken');
 
 async function registerAdmin(req, res) {
   try {
@@ -116,4 +117,32 @@ async function loginStudent(req, res) {
   }
 }
 
-module.exports = { registerAdmin, loginAdmin, loginStudent };
+async function refreshToken(req, res) {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'refreshToken is required' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid or expired refresh token' });
+    }
+
+    const payload = decoded.type === 'student'
+      ? { studentId: decoded.studentId, tuitionClassId: decoded.tuitionClassId, type: 'student' }
+      : { adminId: decoded.adminId, tuitionClassId: decoded.tuitionClassId, role: decoded.role };
+
+    const newAccessToken = generateAccessToken(payload);
+
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong while refreshing the token' });
+  }
+}
+
+module.exports = { registerAdmin, loginAdmin, loginStudent, refreshToken };
