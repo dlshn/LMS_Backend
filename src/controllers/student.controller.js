@@ -109,4 +109,60 @@ async function getStudentById(req, res) {
   }
 }
 
-module.exports = { registerStudent, getAllStudents, getStudentById };
+async function updateStudent(req, res) {
+  try {
+    const tuitionClassId = req.admin.tuitionClassId;
+    const { id } = req.params;
+    const { fullName, school, phone, parentPhone } = req.body;
+
+    const student = await prisma.student.findFirst({ where: { id, tuitionClassId } });
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found in your tuition class' });
+    }
+
+    const updated = await prisma.student.update({
+      where: { id },
+      data: { fullName, school, phone, parentPhone },
+    });
+
+    res.json({
+      message: 'Student updated',
+      student: {
+        id: updated.id,
+        studentNumber: updated.studentNumber,
+        fullName: updated.fullName,
+        school: updated.school,
+        phone: updated.phone,
+        parentPhone: updated.parentPhone,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong while updating the student' });
+  }
+}
+
+async function deleteStudent(req, res) {
+  try {
+    const tuitionClassId = req.admin.tuitionClassId;
+    const { id } = req.params;
+
+    const student = await prisma.student.findFirst({ where: { id, tuitionClassId } });
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found in your tuition class' });
+    }
+
+    await prisma.$transaction([
+      prisma.mark.deleteMany({ where: { studentId: id } }),
+      prisma.attendance.deleteMany({ where: { studentId: id } }),
+      prisma.student.delete({ where: { id } }),
+    ]);
+
+    res.json({ message: 'Student and their records deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong while deleting the student' });
+  }
+}
+
+module.exports = { registerStudent, getAllStudents, getStudentById, updateStudent, deleteStudent };
